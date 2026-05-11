@@ -135,7 +135,7 @@ if st.button('Recommend'):
 
     if recommended_movies:
         if not tmdb_api_key:
-            st.info('TMDB API key not found. Poster images may not load.')
+            st.info('TMDB_API_KEY is not set on this server. Posters will load after the Docker container is started with that environment variable.')
 
         st.subheader('Recommended movies')
         columns = st.columns(len(recommended_movies))
