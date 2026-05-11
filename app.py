@@ -29,15 +29,25 @@ def get_tmdb_api_key():
         return None
 
 
+def load_pickle_file(path):
+    first_bytes = path.read_bytes()[:64]
+
+    if first_bytes.startswith(b'version https://git-lfs.github.com/spec'):
+        raise RuntimeError(
+            f'{path.name} is a Git LFS pointer file, not the real model file. '
+            'Run git lfs pull before building or starting the app.'
+        )
+
+    with open(path, 'rb') as pickle_file:
+        return pickle.load(pickle_file)
+
+
 @st.cache_resource
 def load_data():
-    with open(BASE_DIR / 'movies.pkl', 'rb') as movies_file:
-        movies = pickle.load(movies_file)
-
-    with open(BASE_DIR / 'similrity.pkl', 'rb') as similarity_file:
-        similarity = pickle.load(similarity_file)
-
-    return movies, similarity
+    return (
+        load_pickle_file(BASE_DIR / 'movies.pkl'),
+        load_pickle_file(BASE_DIR / 'similrity.pkl'),
+    )
 
 
 @st.cache_data(show_spinner=False)
@@ -92,7 +102,12 @@ def recommend(movie_title, movies, similarity, api_key, total_recommendations=5)
     return recommendations
 
 
-movies, similarity = load_data()
+try:
+    movies, similarity = load_data()
+except RuntimeError as error:
+    st.error(str(error))
+    st.stop()
+
 movie_titles = movies['title'].values
 tmdb_api_key = get_tmdb_api_key()
 

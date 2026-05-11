@@ -17,16 +17,7 @@ jobs:
         run: git lfs pull
 
       - name: Verify model files
-        run: |
-          python - <<'PY'
-          from pathlib import Path
-
-          for filename in ("movies.pkl", "similrity.pkl"):
-              data = Path(filename).read_bytes()[:64]
-              if data.startswith(b"version https://git-lfs.github.com/spec"):
-                  raise SystemExit(f"{filename} is still a Git LFS pointer file")
-              print(f"{filename} looks like a real model file")
-          PY
+        run: python scripts/verify_model_files.py
 
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
